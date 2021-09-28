@@ -7,6 +7,7 @@ const BlogSchema = new Schema({
     image: {
         type: String
     },
+    likes: [String],
     user: {type: String},
 }, {timestamps: true});
 

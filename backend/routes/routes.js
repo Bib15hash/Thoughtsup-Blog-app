@@ -92,5 +92,36 @@ router.delete('/post/:id', async (req,res) => {
 });
 
 
+router.patch('/like', (req,res) => {
+    console.log('backend: ', req.body)
+    
+    Blog.findByIdAndUpdate(req.body.postId, {
+        $addToSet: {likes: req.body.userId}
+    }, {
+        new: true
+    }).exec((err, result) => {
+        if (err) {
+            return res.status(422).json({error: err})
+        } else {
+            return res.json(result)
+        }
+    })
+})
+
+
+router.patch('/unlike', (req,res) => {
+    console.log('unlike', req.body)
+    Blog.update({_id: req.body.postId}, 
+        {$pull: {likes : req.body.userId}})
+    .exec((err,data) => {
+        if (err) console.log(err);
+        else {
+            console.log('data', data);
+            res.json({data})
+        }
+    })
+})
+
+
 
 module.exports = router;

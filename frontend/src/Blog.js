@@ -145,7 +145,8 @@ export default function MediaCard(props) {
   </div>
 
       </div>
-          ) :  <Redirect to={{pathname: `/post/${post._id}`}} />}
+          ) :  
+          <Redirect to={{pathname: `/post/${post._id}`}} />}
           </div> 
   );
 }
