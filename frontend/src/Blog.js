@@ -66,7 +66,10 @@ export default function MediaCard(props) {
 
   const [searchTerm, setSearchTerm] = useState("")
 
-  
+  const [obj, setObj] = useState({
+    postId: '',
+  })
+
   useEffect(() => {
     return axios.get('http://localhost:8000/post')
         .then((res) => {
@@ -76,6 +79,18 @@ export default function MediaCard(props) {
 }, [blogPosts.length]);  
 
   const handleClick = (blog) => {
+
+    axios({
+      method: 'patch',
+      url: 'http://localhost:8000/postview',
+      data: {
+        id: blog._id
+      }
+  })
+  .then(res => console.log(res.data))
+  .catch(err => console.log(err))
+  ;
+
     axios.get(`http://localhost:8000/post/${blog._id}`)
     .then((res) => {
       setPost(res.data)
@@ -129,6 +144,7 @@ export default function MediaCard(props) {
         <Button onClick={() => {
           if(!loggedIn) alert('Please login to view the complete post') 
           else {
+
             handleClick(blog)
           } 
         }} size="small" color="primary">

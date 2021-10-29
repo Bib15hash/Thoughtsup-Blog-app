@@ -8,6 +8,11 @@ const BlogSchema = new Schema({
         type: String
     },
     likes: [String],
+    comments: [{
+        userName: String,
+        comment: String
+    }],
+    views: {type: Number, default: 0},
     user: {type: String},
 }, {timestamps: true});
 

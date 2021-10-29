@@ -123,5 +123,35 @@ router.patch('/unlike', (req,res) => {
 })
 
 
+router.patch('/view', (req,res) => {
+    // console.log(req.body)
+})
+
+
+router.patch('/comment', (req, res) => {
+    console.log(req.body)
+
+    Blog.findByIdAndUpdate(req.body.obj2.postId, {
+        $push: {comments: {$each: [{userName: req.body.obj2.userName, comment: req.body.text}]} }
+    }).exec((err, result) => {
+        if (err) {
+            return res.status(422).json({error: err})
+        } else {
+            console.log(result)
+            return res.json(result)
+        }
+    })
+})
+
+router.patch('/postview', (req, res) => {
+    Blog.findByIdAndUpdate(req.body.id, {$inc: {views : 1}}, (err, docs) => {
+        if (err) {
+            console.log(err)
+        } else {
+            console.log(docs)
+        }
+    })
+})
+
 
 module.exports = router;

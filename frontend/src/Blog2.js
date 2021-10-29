@@ -1,10 +1,11 @@
 import React,{useState,useEffect,useContext} from 'react';
-import { useParams,Redirect } from 'react-router-dom';
-import {ThumbUp, ThumbDown} from '@material-ui/icons'
+import { useParams,Redirect,useHistory } from 'react-router-dom';
+import {ThumbUp, ThumbDown} from '@material-ui/icons';
+import VisibilityIcon from '@material-ui/icons/Visibility';
 import axios from 'axios';
 import NavLogout from './NavLogout';
 import {LoginContext} from './Contexts/LoginContext';
-import {makeStyles} from '@material-ui/core';
+import {makeStyles,TextField,Button} from '@material-ui/core';
 import moment from 'moment';
 
 const useStyles = makeStyles({
@@ -76,6 +77,78 @@ const useStyles = makeStyles({
         bottom: '1.75rem',
         left: '1rem'
 
+    },
+
+    view: {
+        float: 'right',
+        position: 'relative',
+        right: '3rem',
+        top: '1.5rem'
+    },
+
+    view2: {
+        position: 'absolute',
+        bottom: '3%',
+        right: '7.5%',
+    },
+
+    class_h3: {
+        fontSize: '32px',
+        fontFamily: 'Kiwi Maru'
+    },
+
+    recent: {
+        fontFamily: 'Montserrat',
+        cursor: 'pointer',
+        '&:hover': {
+            textDecoration: 'underline'
+        }
+    },
+
+    us: {
+        fontStyle: 'italic'
+    },
+
+    textAndButton: {
+        display: 'inline-block'
+    },
+
+    addbutton: {
+        marginBottom: '1rem',
+        position: 'abosulte',
+        left: '10%',
+        top: '1rem',
+        ['@media (max-width:1000px)']: { // eslint-disable-line no-useless-computed-key
+            left: '20%'
+        },
+
+        ['@media (min-width:1001px)']: { // eslint-disable-line no-useless-computed-key
+            left: '40%'
+        },
+
+        ['@media (min-width:1250px)']: { // eslint-disable-line no-useless-computed-key
+            left: '5%'
+        }
+    },
+
+    commentbar: {
+        width: '35rem',
+        ['@media (max-width:1000px)']: { // eslint-disable-line no-useless-computed-key
+            width: '18rem'
+        },
+
+        ['@media (max-width:750px)']: { // eslint-disable-line no-useless-computed-key
+            width: '12rem'
+        }
+
+    },
+
+    viewcount: {
+        position: 'relative',
+        float: 'right',
+        bottom: '-3rem',
+        right: '0.5rem'
+
     }
 
     
@@ -85,6 +158,8 @@ const Blog2 = () => {
 
     const classes = useStyles()
     
+    const history = useHistory();
+
     const {postid} = useParams();
     const [allPosts, setAllPosts] = useState([])
 
@@ -97,22 +172,38 @@ const Blog2 = () => {
         postId: ''
     })
 
+    const [obj2, setObj2] = useState({
+        userName: '',
+        postId: '' 
+    })
+
     const {loggedIn,currentUser} = useContext(LoginContext);
 
-    // useEffect(() => {
+    const [comm,setComment] = useState('');
 
-    //     axios.get(`http://localhost:8000/post/${postid}`)
-    //     .then((res) => {
-    //       setPost(res.data)
-    //       setImage(res.data.image)
-    //     })
-    //     .catch(err => console.log('Could not receive data',err));
-    // }, []);
+    const [com, setCom] = useState([]);
+
+    const handleClick = (post) => {
+
+        axios({
+            method: 'patch',
+            url: 'http://localhost:8000/postview',
+            data: {
+                id: post._id
+            }
+        })
+        .then(res => console.log(res.data))
+        .catch(err => console.log(err));
+
+        history.push('/post/'+post._id)
+    }
+
 
     useEffect(() => {
 
         axios.get(`http://localhost:8000/post/${postid}`)
         .then((res) => {
+          setCom(res.data.comments)
           setPost(res.data)
           setImage(res.data.image)
         })
@@ -121,7 +212,7 @@ const Blog2 = () => {
 
         axios.get('http://localhost:8000/post')
         .then(res => {
-            setAllPosts(res)
+            setAllPosts(res.data)
         })
         .catch(err => console.log(err));
 
@@ -129,11 +220,20 @@ const Blog2 = () => {
             userId: currentUser.googleId,
             postId: post._id
         })
+
+        setObj2({
+            postId: post._id,
+            userName: currentUser.name
+        })
+
+
     },[post.likes]);
 
-   
+    
 
-    console.log('look this size', post.likes)
+    
+    // console.log('look this size', post.likes)
+    console.log('Post comments ', com)
 
     return (
         <div>
@@ -149,16 +249,15 @@ const Blog2 = () => {
                        <p className={classes.content}>{post.content}</p>
                         <div className={classes.ic}>
          
-                        <ThumbUp onClick={() => {    
-                            
+                        <ThumbUp onClick={() => {  
+                                            
                             axios.patch('http://localhost:8000/like', obj)
                             .then(obj => console.log('Object', obj))
                             .catch(err => console.log("Error", err))
                         }}/>
                         </div>
                         <div className={classes.ic2}>
-                        <ThumbDown onClick={() => {    
-                            
+                        <ThumbDown onClick={() => {   
                             axios.patch('http://localhost:8000/unlike', obj)
                             .then(obj => {
                                 console.log('obj',obj)
@@ -166,7 +265,74 @@ const Blog2 = () => {
                             .catch(err => console.log("Error", err))
                         }}/>
                         </div>
+
+                         <VisibilityIcon className={classes.view}/>
+                         <div className={classes.viewcount}>{post.views} views</div>
+
+
                         {post.likes.length ? <div className={classes.txt}>{post.likes.length} likes</div> : null}
+
+                        <h3 className={classes.class_h3}>Comments</h3>
+
+                        <div className={classes.textAndButton}>
+                        <TextField
+                            className={classes.commentbar}
+                            onChange={(e) => {
+                                if (e.target.value.length !== 0)
+                                    setComment(e.target.value)
+                                }}
+                            value={comm}
+                            placeholder="Add a comment"
+                            multiline
+                            rows={2}
+                            
+                        />  
+
+                        <Button onClick={() => {
+                            axios({
+                                method: 'patch',
+                                url: 'http://localhost:8000/comment',
+                                data: {
+                                  obj2,
+                                  text: comm
+                                }
+                            })
+                            .then(res => console.log(res.data))
+                            .catch(err => console.log(err))
+                            ;
+
+                            setComment('')
+                        }} variant="contained" color="primary" className={classes.addbutton}>Add</Button>
+
+                        
+                        {com && com.slice(0).reverse().map(val => {
+                            return <div>
+                                <h4>{val.userName}</h4>
+                                <p>{val.comment}</p>
+                            </div>
+
+                        })}
+                        
+
+                        </div>
+
+                        <h3 className={classes.class_h3}>Recent Articles</h3>
+                        
+                        <div>
+                        
+                            {   
+                                allPosts.slice(0, 3).map(blog => {
+                                    return (
+                                        <ul><li>
+                                        <p onClick={() => {handleClick(blog)}} className={classes.recent}>{blog.title} - by <span className={classes.us}>{blog.user}</span></p>
+                                        </li></ul>
+                                    )
+                            })}
+                        </div>
+
+                        {/* <div className={classes.view} >
+                        Views <VisibilityIcon />
+                        </div> */}
                     </div>
                 </div>) 
                 : 

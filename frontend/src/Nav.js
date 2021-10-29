@@ -87,9 +87,11 @@ const Nav = () => {
             <Toolbar>
             <IconButton edge="start" color="inherit" aria-label="menu">
             </IconButton>
+            
             <Typography className={classes.title}  Typography variant="h6">
                 Thoughts up!
             </Typography>
+            
             <GoogleLogin 
             clientId={key}
             render={renderProps => (
